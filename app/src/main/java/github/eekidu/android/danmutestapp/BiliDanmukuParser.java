@@ -56,24 +56,43 @@ public class BiliDanmukuParser extends BaseDanmakuParser {
     @Override
     public Danmakus parse() {
 
-        if (mDataSource != null) {
-            AndroidFileSource source = (AndroidFileSource) mDataSource;
-            try {
-                XMLReader xmlReader = XMLReaderFactory.createXMLReader();
-                XmlContentHandler contentHandler = new XmlContentHandler();
-                xmlReader.setContentHandler(contentHandler);
-                xmlReader.parse(new InputSource(source.data()));
-                return contentHandler.getResult();
-            } catch (SAXException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+//        if (mDataSource != null) {
+//            AndroidFileSource source = (AndroidFileSource) mDataSource;
+//            try {
+//                XMLReader xmlReader = XMLReaderFactory.createXMLReader();
+//                XmlContentHandler contentHandler = new XmlContentHandler();
+//                xmlReader.setContentHandler(contentHandler);
+//                xmlReader.parse(new InputSource(source.data()));
+//                return contentHandler.getResult();
+//            } catch (SAXException e) {
+//                e.printStackTrace();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//
+//        }
 
+//        return null;
+        return fakeKee();
+    }
+
+    private Danmakus fakeKee() {
+        Danmakus result = new Danmakus();
+        for (int i = 0; i < 1000; i++) {
+            BaseDanmaku item = mContext.mDanmakuFactory.createDanmaku(BaseDanmaku.TYPE_SCROLL_RL, mContext);
+            item.text = "我是弹幕" + i;
+            item.setTime(3 * 1000 + i * 10);
+            item.setTimer(getTimer());
+            item.textSize = 20 * (mDispDensity - 0.6f);
+            item.textColor = Color.WHITE;
+            item.flags = mContext.mGlobalFlagValues;
+            item.index = i;
+            result.addItem(item);
         }
 
-        return null;
+        return result;
     }
+
 
     public class XmlContentHandler extends DefaultHandler {
 
@@ -305,7 +324,7 @@ public class BiliDanmukuParser extends BaseDanmakuParser {
             return 0;
         }
     }
-    
+
     private long parseLong(String longStr) {
         try {
             return Long.parseLong(longStr);

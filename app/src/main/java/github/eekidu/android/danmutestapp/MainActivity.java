@@ -57,6 +57,7 @@ import master.flame.danmaku.danmaku.util.IOUtils;
 
 public class MainActivity extends Activity implements View.OnClickListener {
     private static final String TAG = "Danmu1234";
+    private static String TAG1 = "DanmuShunxu";
 
     private IDanmakuView mDanmakuView;
 
@@ -82,15 +83,17 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     private Button mBtnSendDanmakus;
     private DanmakuContext mContext;
+
     private BaseCacheStuffer.Proxy mCacheStufferAdapter = new BaseCacheStuffer.Proxy() {
 
         private Drawable mDrawable;
 
         @Override
         public void prepareDrawing(final BaseDanmaku danmaku, boolean fromWorkerThread) {
+            Log.d(TAG1, "prepareDrawing: " + DanmuUtil.toString(danmaku));
             if (!danmaku.isGuest) {
-                if (danmaku.firstShownFlag >= 0) {
-                    danmaku.cache = null;
+                if (danmaku.firstShownFlag == 0) {
+                    mDanmakuView.invalidateDanmaku(danmaku, true);
                 }
 
             }
@@ -133,6 +136,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         @Override
         public void releaseResource(BaseDanmaku danmaku) {
+            Log.d(TAG1, "releaseResource: " + DanmuUtil.toString(danmaku));
 //            if (!danmaku.isGuest) {
 //                danmaku.cache = null;
 //            }
@@ -149,6 +153,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         @Override
         public void measure(BaseDanmaku danmaku, TextPaint paint, boolean fromWorkerThread) {
+
             if (danmaku.isGuest) {
                 danmaku.padding = 5;
             } else {
@@ -161,7 +166,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         @Override
         public void drawBackground(BaseDanmaku danmaku, Canvas canvas, float left, float top) {
-//            Log.d(TAG, "drawBackground: " + danmaku.firstShownFlag + " ,danmaku.isGuest: " + danmaku.isGuest + ", index:" + danmaku.index);
+            Log.d(TAG1, "releaseResource: " + DanmuUtil.toString(danmaku));
+            Log.i(TAG, "drawBackground: " + danmaku.firstShownFlag + " ,danmaku.isGuest: " + danmaku.isGuest + ", index:" + danmaku.index);
             if (danmaku.isGuest) {
                 super.drawBackground(danmaku, canvas, left, top);
             } else {
@@ -213,35 +219,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     }
 
-    private BaseDanmakuParser createParser() {
-        BaseDanmakuParser biliDanmukuParser = new BaseDanmakuParser() {
-
-            @Override
-            protected IDanmakus parse() {
-                Danmakus danmakus = new Danmakus();
-//                for (int i = 0; i < 100; i++) {
-//
-//                    BaseDanmaku danmaku = this.mContext.mDanmakuFactory.createDanmaku(BaseDanmaku.TYPE_SCROLL_RL);
-//                    if (danmaku == null || mDanmakuView == null) {
-//                        continue;
-//                    }
-//                    danmaku.setTime(3 * 1000 + 10 * i);
-//                    danmaku.text = "这是一条弹幕" + i;
-//                    danmaku.padding = 5;
-//                    danmaku.priority = 0;  // 可能会被各种过滤器过滤并隐藏显示
-//                    danmaku.isLive = false;
-//                    danmaku.textSize = 25f * (mParser.getDisplayer().getDensity() - 0.6f);
-//                    danmaku.textColor = Color.RED;
-//                    danmaku.textShadowColor = Color.WHITE;
-//                    // danmaku.underlineColor = Color.GREEN;
-//                    danmaku.borderColor = Color.GREEN;
-//                    danmakus.addItem(danmaku);
-//                }
-                return danmakus;
-            }
-        };
-        return biliDanmukuParser;
-    }
 
     private void findViews() {
 
@@ -301,6 +278,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
                 @Override
                 public void danmakuShown(BaseDanmaku danmaku) {
+                    Log.d(TAG1, "releaseResource: " + DanmuUtil.toString(danmaku));
                     Log.d(TAG, "danmakuShown: " + danmaku.isGuest + "  , " + danmaku.index + " ," + danmaku.firstShownFlag);
 //                    if(!danmaku.isGuest){
 //                        danmaku.cache=null;
@@ -425,7 +403,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
             for (int i = 0; i < 10; i++) {
                 BaseDanmaku baseDanmaku = DanmuUtil.generateDanmu(mContext);
-                baseDanmaku.setTime(mDanmakuView.getCurrentTime() + 1500);
+                baseDanmaku.setTime(mDanmakuView.getCurrentTime() + 2000);
                 mDanmakuView.addDanmaku(baseDanmaku);
             }
 

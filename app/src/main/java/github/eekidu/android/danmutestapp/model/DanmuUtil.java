@@ -24,4 +24,10 @@ public class DanmuUtil {
 //        danmaku.borderColor = Color.GREEN;
         return danmaku;
     }
+
+    public static String toString(BaseDanmaku baseDanmaku) {
+        String result = "index:" + baseDanmaku.index + ", showCount:" + baseDanmaku.firstShownFlag;
+        return result;
+
+    }
 }

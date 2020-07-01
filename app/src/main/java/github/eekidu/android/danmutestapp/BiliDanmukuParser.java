@@ -56,24 +56,24 @@ public class BiliDanmukuParser extends BaseDanmakuParser {
     @Override
     public Danmakus parse() {
 
-        if (mDataSource != null) {
-            AndroidFileSource source = (AndroidFileSource) mDataSource;
-            try {
-                XMLReader xmlReader = XMLReaderFactory.createXMLReader();
-                XmlContentHandler contentHandler = new XmlContentHandler();
-                xmlReader.setContentHandler(contentHandler);
-                xmlReader.parse(new InputSource(source.data()));
-                return contentHandler.getResult();
-            } catch (SAXException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-        }
-
-        return null;
-//        return fakeKee();
+//        if (mDataSource != null) {
+//            AndroidFileSource source = (AndroidFileSource) mDataSource;
+//            try {
+//                XMLReader xmlReader = XMLReaderFactory.createXMLReader();
+//                XmlContentHandler contentHandler = new XmlContentHandler();
+//                xmlReader.setContentHandler(contentHandler);
+//                xmlReader.parse(new InputSource(source.data()));
+//                return contentHandler.getResult();
+//            } catch (SAXException e) {
+//                e.printStackTrace();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//
+//        }
+//
+//        return null;
+        return fakeKee();
     }
 
     private Danmakus fakeKee() {

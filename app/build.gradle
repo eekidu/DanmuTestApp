@@ -28,6 +28,7 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
-    implementation 'com.github.ctiao:DanmakuFlameMaster:0.9.25'
+//    implementation 'com.github.ctiao:DanmakuFlameMaster:0.9.25'
+    api project(":DanmakuFlameMaster")
     implementation 'com.nostra13.universalimageloader:universal-image-loader:1.9.5'
 }

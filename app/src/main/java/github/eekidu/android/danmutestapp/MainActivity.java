@@ -1,6 +1,7 @@
 package github.eekidu.android.danmutestapp;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Canvas;
@@ -394,7 +395,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
         } else if (v == mBtnPauseDanmaku) {
             mDanmakuView.pause();
         } else if (v == mBtnResumeDanmaku) {
-            mDanmakuView.resume();
+//            mDanmakuView.resume();
+            Intent intent = new Intent(this, Main2Activity.class);
+            startActivity(intent);
         } else if (v == mBtnSendDanmaku) {
 //            addDanmaku(false);
             mDanmakuView.seekTo(2000L);

@@ -1,15 +1,15 @@
 package github.eekidu.android.danmutestapp;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import java.io.InputStream;
 import java.util.HashMap;
 
+import github.eekidu.android.danmutestapp.ext.BaseCacheStufferProxy;
 import github.eekidu.android.danmutestapp.model.DanmuUtil;
 import master.flame.danmaku.controller.DrawHandler;
 import master.flame.danmaku.controller.IDanmakuView;
@@ -24,13 +24,15 @@ import master.flame.danmaku.danmaku.model.android.DanmakuContext;
 import master.flame.danmaku.danmaku.model.android.Danmakus;
 import master.flame.danmaku.danmaku.parser.BaseDanmakuParser;
 import master.flame.danmaku.danmaku.parser.IDataSource;
-import master.flame.danmaku.ui.widget.DanmakuView;
 
 public class Main2Activity extends AppCompatActivity {
     IDanmakuView mDanmakuView;
     private DanmakuContext mContext;
     private BaseDanmakuParser mParse;
     private String TAG = "Main2Activity";
+
+
+
 
 
     @Override
@@ -46,16 +48,17 @@ public class Main2Activity extends AppCompatActivity {
         mParse = createParase();
 
         mDanmakuView.prepare(mParse, mContext);
+
     }
 
 
-    private void initDanmakuView(IDanmakuView danmakuView) {
-        mDanmakuView.setCallback(new DrawHandler.Callback() {
+    private void initDanmakuView(final IDanmakuView danmakuView) {
+        danmakuView.setCallback(new DrawHandler.Callback() {
             private long lastTime;
 
             @Override
             public void prepared() {
-                mDanmakuView.start();
+                danmakuView.start();
             }
 
             @Override
@@ -82,9 +85,8 @@ public class Main2Activity extends AppCompatActivity {
             }
         });
 
-
         mDanmakuView.showFPS(true);
-        mDanmakuView.enableDanmakuDrawingCache(false);
+        mDanmakuView.enableDanmakuDrawingCache(true);
     }
 
 
@@ -137,6 +139,8 @@ public class Main2Activity extends AppCompatActivity {
                 .setScaleTextSize(1.2f)
 //                .setCacheStuffer(new MainActivity.BackgroundCacheStuffer(), mCacheStufferAdapter) // 图文混排使用SpannedCacheStuffer
 //        .setCacheStuffer(new BackgroundCacheStuffer())  // 绘制背景使用BackgroundCacheStuffer
+//                .setCacheStuffer(new github.eekidu.android.danmutestapp.ext.BackgroundCacheStuffer(this), mCacheStufferAdapter)
+                .setCacheStuffer(new github.eekidu.android.danmutestapp.ext.BackgroundCacheStuffer(this), new BaseCacheStufferProxy(mDanmakuView))
                 .setMaximumLines(maxLinesPair)
 //                .preventOverlapping(overlappingEnablePair);
                 .preventOverlapping(overlappingEnablePair)
@@ -149,10 +153,10 @@ public class Main2Activity extends AppCompatActivity {
         if (id == R.id.bt01) {
             mDanmakuView.seekTo(500L);
         } else if (id == R.id.bt02) {
-            onSpeedChanged(2f);
+            onSpeedChanged(2f, 1f);
             mContext.setScrollSpeedFactor(0.7f);
         } else if (id == R.id.bt03) {
-            onSpeedChanged(1f);
+            onSpeedChanged(1f, 2f);
             mContext.setScrollSpeedFactor(1.2f);
         } else if (id == R.id.bt04) {
             mDanmakuView.pause();
@@ -164,21 +168,21 @@ public class Main2Activity extends AppCompatActivity {
             case R.id.bt11:
                 BaseDanmaku baseDanmaku = DanmuUtil.generateDanmu(mContext);
                 baseDanmaku.setTime(mParse.getTimer().currMillisecond + 1000);
+                baseDanmaku.isGuest = false;
+                baseDanmaku.textSize = 50;
+                baseDanmaku.flags = mContext.mGlobalFlagValues;
+                baseDanmaku.firstShownFlag = -1;
                 mDanmakuView.addDanmaku(baseDanmaku);
                 break;
 
         }
     }
 
-    private void onSpeedChanged(float speed) {
+    private void onSpeedChanged(float oldSpeed, float speed) {
         IDanmakus danmakus = mParse.getDanmakus();
-        for (int i = 0; i < danmakus.size(); i++) {
-            if (danmakus instanceof BaseDanmaku) {
-                long time = ((BaseDanmaku) danmakus).getTime();
-                long mockTime = (long) (time / speed);
-                long offset = time - mockTime;
-                ((BaseDanmaku) danmakus).setTimeOffset(offset);
-            }
+        for (BaseDanmaku baseDanmaku : danmakus.getCollection()) {
+            float v = baseDanmaku.getTime() / oldSpeed * speed;
+            baseDanmaku.setTime((long) v);
         }
     }
 

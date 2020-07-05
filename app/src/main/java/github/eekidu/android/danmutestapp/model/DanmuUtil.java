@@ -18,7 +18,7 @@ public class DanmuUtil {
         danmaku.priority = 1;  // 可能会被各种过滤器过滤并隐藏显示
         danmaku.textSize = 25;
         danmaku.isGuest = false;
-        danmaku.textColor = Color.RED;
+        danmaku.textColor = Color.WHITE;
         danmaku.textShadowColor = Color.WHITE;
         // danmaku.underlineColor = Color.GREEN;
 //        danmaku.borderColor = Color.GREEN;

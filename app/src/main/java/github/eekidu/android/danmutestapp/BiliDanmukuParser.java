@@ -82,12 +82,13 @@ public class BiliDanmukuParser extends BaseDanmakuParser {
 
             BaseDanmaku item = mContext.mDanmakuFactory.createDanmaku(BaseDanmaku.TYPE_SCROLL_RL, mContext);
             item.text = "我是弹幕" + i;
+            item.flags = mContext.mGlobalFlagValues;
             item.setTime(i * 1000);
             item.setTimer(getTimer());
             item.textSize = 20 * (mDispDensity - 0.6f);
             item.textColor = Color.WHITE;
             item.isGuest = true;
-            item.flags = mContext.mGlobalFlagValues;
+
             item.index = i;
             result.addItem(item);
         }

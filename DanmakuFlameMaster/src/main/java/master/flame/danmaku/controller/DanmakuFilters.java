@@ -59,7 +59,7 @@ public class DanmakuFilters {
 
     /**
      * 根据弹幕类型过滤
-     * 
+     *
      * @author ch
      */
     public static class TypeDanmakuFilter extends BaseDanmakuFilter<List<Integer>> {
@@ -105,7 +105,7 @@ public class DanmakuFilters {
 
     /**
      * 根据同屏数量过滤弹幕
-     * 
+     *
      * @author ch
      */
     public static class QuantityDanmakuFilter extends BaseDanmakuFilter<Integer> {
@@ -116,7 +116,7 @@ public class DanmakuFilters {
         private float mFilterFactor = 1f;
 
         private boolean needFilter(BaseDanmaku danmaku, int orderInScreen,
-                                 int totalSizeInScreen, DanmakuTimer timer, boolean fromCachingTask, DanmakuContext context) {
+                                   int totalSizeInScreen, DanmakuTimer timer, boolean fromCachingTask, DanmakuContext context) {
 
             if (mMaximumSize <= 0 || danmaku.getType() != BaseDanmaku.TYPE_SCROLL_RL) {
                 return false;
@@ -174,7 +174,7 @@ public class DanmakuFilters {
 
     /**
      * 根据绘制耗时过滤弹幕
-     * 
+     *
      * @author ch
      */
     public static class ElapsedTimeFilter extends BaseDanmakuFilter<Object> {
@@ -182,7 +182,7 @@ public class DanmakuFilters {
         long mMaxTime = 20; // 绘制超过20ms就跳过 ，默认保持接近50fps
 
         private synchronized boolean needFilter(BaseDanmaku danmaku, int orderInScreen,
-                                   int totalsizeInScreen, DanmakuTimer timer, boolean fromCachingTask) {
+                                                int totalsizeInScreen, DanmakuTimer timer, boolean fromCachingTask) {
             if (timer == null || !danmaku.isOutside()) {
                 return false;
             }
@@ -223,7 +223,7 @@ public class DanmakuFilters {
 
     /**
      * 根据文本颜色白名单过滤
-     * 
+     *
      * @author ch
      */
     public static class TextColorFilter extends BaseDanmakuFilter<List<Integer>> {
@@ -265,7 +265,7 @@ public class DanmakuFilters {
 
     /**
      * 根据用户标识黑名单过滤
-     * 
+     *
      * @author ch
      */
     public static abstract class UserFilter<T> extends BaseDanmakuFilter<List<T>> {
@@ -301,7 +301,7 @@ public class DanmakuFilters {
 
     /**
      * 根据用户Id黑名单过滤
-     * 
+     *
      * @author ch
      */
     public static class UserIdFilter extends UserFilter<Integer> {
@@ -320,7 +320,7 @@ public class DanmakuFilters {
 
     /**
      * 根据用户hash黑名单过滤
-     * 
+     *
      * @author ch
      */
     public static class UserHashFilter extends UserFilter<String> {
@@ -339,7 +339,7 @@ public class DanmakuFilters {
 
     /**
      * 屏蔽游客弹幕
-     * 
+     *
      * @author ch
      */
     public static class GuestFilter extends BaseDanmakuFilter<Boolean> {
@@ -368,6 +368,9 @@ public class DanmakuFilters {
 
     }
 
+    /**
+     * 过滤重复弹幕
+     */
     public static class DuplicateMergingFilter extends BaseDanmakuFilter<Void> {
 
         protected final IDanmakus blockedDanmakus = new Danmakus(Danmakus.ST_BY_LIST);
@@ -377,6 +380,7 @@ public class DanmakuFilters {
         private final void removeTimeoutDanmakus(final IDanmakus danmakus, final long limitTime) {
             danmakus.forEachSync(new IDanmakus.DefaultConsumer<BaseDanmaku>() {
                 long startTime = SystemClock.uptimeMillis();
+
                 @Override
                 public int accept(BaseDanmaku item) {
                     try {
@@ -395,8 +399,14 @@ public class DanmakuFilters {
             });
         }
 
+        /**
+         * 过滤超时弹幕
+         *
+         * @param danmakus
+         * @param limitTime
+         */
         private void removeTimeoutDanmakus(LinkedHashMap<String, BaseDanmaku> danmakus,
-                int limitTime) {
+                                           int limitTime) {
             Iterator<Entry<String, BaseDanmaku>> it = danmakus.entrySet().iterator();
             long startTime = SystemClock.uptimeMillis();
             while (it.hasNext()) {
@@ -418,7 +428,7 @@ public class DanmakuFilters {
         }
 
         public synchronized boolean needFilter(BaseDanmaku danmaku, int index, int totalsizeInScreen,
-                DanmakuTimer timer, boolean fromCachingTask) {
+                                               DanmakuTimer timer, boolean fromCachingTask) {
             removeTimeoutDanmakus(blockedDanmakus, 2);
             removeTimeoutDanmakus(passedDanmakus, 2);
             removeTimeoutDanmakus(currentDanmakus, 3);
@@ -470,6 +480,9 @@ public class DanmakuFilters {
 
     }
 
+    /**
+     * 按照最大行数过滤
+     */
     public static class MaximumLinesFilter extends BaseDanmakuFilter<Map<Integer, Integer>> {
 
         private Map<Integer, Integer> mMaximumLinesPairs;
@@ -498,6 +511,9 @@ public class DanmakuFilters {
         }
     }
 
+    /**
+     * 过滤重叠弹幕
+     */
     public static class OverlappingFilter extends BaseDanmakuFilter<Map<Integer, Boolean>> {
 
         private Map<Integer, Boolean> mEnabledPairs;

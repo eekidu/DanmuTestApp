@@ -62,7 +62,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     private IDanmakuView mDanmakuView;
 
-    private View mMediaController;
+//    private View mMediaController;
 
     public PopupWindow mPopupWindow;
 
@@ -223,7 +223,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     private void findViews() {
 
-        mMediaController = findViewById(R.id.media_controller);
+//        mMediaController = findViewById(R.id.media_controller);
         mBtnRotate = (Button) findViewById(R.id.rotate);
         mBtnHideDanmaku = (Button) findViewById(R.id.btn_hide);
         mBtnShowDanmaku = (Button) findViewById(R.id.btn_show);
@@ -234,7 +234,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         mBtnSendDanmakus = (Button) findViewById(R.id.btn_send_danmakus);
         mBtnRotate.setOnClickListener(this);
         mBtnHideDanmaku.setOnClickListener(this);
-        mMediaController.setOnClickListener(this);
+//        mMediaController.setOnClickListener(this);
         mBtnShowDanmaku.setOnClickListener(this);
         mBtnPauseDanmaku.setOnClickListener(this);
         mBtnResumeDanmaku.setOnClickListener(this);
@@ -243,7 +243,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         mBtnSendDanmakus.setOnClickListener(this);
 
         // VideoView
-        VideoView mVideoView = (VideoView) findViewById(R.id.videoview);
+//        VideoView mVideoView = (VideoView) findViewById(R.id.videoview);
         // DanmakuView
 
         // 设置最大显示行数
@@ -314,7 +314,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
                 @Override
                 public boolean onViewClick(IDanmakuView view) {
-                    mMediaController.setVisibility(View.VISIBLE);
+//                    mMediaController.setVisibility(View.VISIBLE);
                     return false;
                 }
             });
@@ -323,15 +323,15 @@ public class MainActivity extends Activity implements View.OnClickListener {
             mDanmakuView.enableDanmakuDrawingCache(true);
         }
 
-        if (mVideoView != null) {
-            mVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                @Override
-                public void onPrepared(MediaPlayer mediaPlayer) {
-                    mediaPlayer.start();
-                }
-            });
-            mVideoView.setVideoPath(Environment.getExternalStorageDirectory() + "/1.flv");
-        }
+//        if (mVideoView != null) {
+//            mVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+//                @Override
+//                public void onPrepared(MediaPlayer mediaPlayer) {
+//                    mediaPlayer.start();
+//                }
+//            });
+//            mVideoView.setVideoPath(Environment.getExternalStorageDirectory() + "/1.flv");
+//        }
 
     }
 
@@ -379,9 +379,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
-        if (v == mMediaController) {
-            mMediaController.setVisibility(View.GONE);
-        }
+//        if (v == mMediaController) {
+//            mMediaController.setVisibility(View.GONE);
+//        }
         if (mDanmakuView == null || !mDanmakuView.isPrepared())
             return;
         if (v == mBtnRotate) {

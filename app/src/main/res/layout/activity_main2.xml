@@ -9,9 +9,8 @@
 
     <!--<VideoView-->
     <!--android:id="@+id/videoview"-->
-    <!--android:layout_width="fill_parent"-->
-    <!--android:layout_height="fill_parent"-->
-    <!--android:background="@null"-->
+    <!--android:layout_width="1dp"-->
+    <!--android:layout_height="1dp"-->
     <!--android:visibility="visible" />-->
 
     <master.flame.danmaku.ui.widget.DanmakuView
@@ -20,18 +19,68 @@
         android:layout_height="300dp" />
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
-        <Button
-            android:id="@+id/bt01"
-            android:layout_width="wrap_content"
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:onClick="onClickMain2"
-            android:text="01" />
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/bt01"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onClickMain2"
+                android:text="SeekTO" />
+
+            <Button
+                android:id="@+id/bt02"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onClickMain2"
+                android:text="2倍速" />
+
+            <Button
+                android:id="@+id/bt03"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onClickMain2"
+                android:text="1倍速" />
+
+            <Button
+                android:id="@+id/bt04"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onClickMain2"
+                android:text="暂停" />
+
+            <Button
+                android:id="@+id/bt05"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onClickMain2"
+                android:text="恢复" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_gravity="bottom"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/bt11"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onClickMain2"
+                android:text="添加一条" />
+
+        </LinearLayout>
 
     </LinearLayout>
-
 </FrameLayout>

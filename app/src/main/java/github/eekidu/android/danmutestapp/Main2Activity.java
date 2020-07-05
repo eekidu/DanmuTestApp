@@ -10,7 +10,9 @@ import android.view.View;
 import java.io.InputStream;
 import java.util.HashMap;
 
+import github.eekidu.android.danmutestapp.model.DanmuUtil;
 import master.flame.danmaku.controller.DrawHandler;
+import master.flame.danmaku.controller.IDanmakuView;
 import master.flame.danmaku.danmaku.loader.ILoader;
 import master.flame.danmaku.danmaku.loader.IllegalDataException;
 import master.flame.danmaku.danmaku.loader.android.DanmakuLoaderFactory;
@@ -25,7 +27,7 @@ import master.flame.danmaku.danmaku.parser.IDataSource;
 import master.flame.danmaku.ui.widget.DanmakuView;
 
 public class Main2Activity extends AppCompatActivity {
-    DanmakuView mDanmakuView;
+    IDanmakuView mDanmakuView;
     private DanmakuContext mContext;
     private BaseDanmakuParser mParse;
     private String TAG = "Main2Activity";
@@ -47,7 +49,7 @@ public class Main2Activity extends AppCompatActivity {
     }
 
 
-    private void initDanmakuView(DanmakuView danmakuView) {
+    private void initDanmakuView(IDanmakuView danmakuView) {
         mDanmakuView.setCallback(new DrawHandler.Callback() {
             private long lastTime;
 
@@ -60,7 +62,7 @@ public class Main2Activity extends AppCompatActivity {
             public void updateTimer(DanmakuTimer timer) {
                 if (timer.currMillisecond < lastTime) {
                     long currMillisecond = timer.currMillisecond;
-                    Log.i(TAG, "updateTimer: " + currMillisecond);
+                    Log.i(TAG, "updateTimer: " + currMillisecond + "  ,last=" + lastTime);
                 }
                 lastTime = timer.currMillisecond;
             }
@@ -141,21 +143,49 @@ public class Main2Activity extends AppCompatActivity {
                 .setDanmakuMargin(40);
     }
 
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            mDanmakuView.getConfig().setDanmakuMargin(0);
-        } else if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            mDanmakuView.getConfig().setDanmakuMargin(40);
-        }
-    }
-
 
     public void onClickMain2(View view) {
         int id = view.getId();
         if (id == R.id.bt01) {
-            mDanmakuView.seekTo(2000L);
+            mDanmakuView.seekTo(500L);
+        } else if (id == R.id.bt02) {
+            onSpeedChanged(2f);
+            mContext.setScrollSpeedFactor(0.7f);
+        } else if (id == R.id.bt03) {
+            onSpeedChanged(1f);
+            mContext.setScrollSpeedFactor(1.2f);
+        } else if (id == R.id.bt04) {
+            mDanmakuView.pause();
+        } else if (id == R.id.bt05) {
+            mDanmakuView.resume();
         }
+
+        switch (id) {
+            case R.id.bt11:
+                BaseDanmaku baseDanmaku = DanmuUtil.generateDanmu(mContext);
+                baseDanmaku.setTime(mParse.getTimer().currMillisecond + 1000);
+                mDanmakuView.addDanmaku(baseDanmaku);
+                break;
+
+        }
+    }
+
+    private void onSpeedChanged(float speed) {
+        IDanmakus danmakus = mParse.getDanmakus();
+        for (int i = 0; i < danmakus.size(); i++) {
+            if (danmakus instanceof BaseDanmaku) {
+                long time = ((BaseDanmaku) danmakus).getTime();
+                long mockTime = (long) (time / speed);
+                long offset = time - mockTime;
+                ((BaseDanmaku) danmakus).setTimeOffset(offset);
+            }
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mDanmakuView.release();
+        mDanmakuView = null;
     }
 }

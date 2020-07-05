@@ -24,6 +24,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Choreographer;
 
 import java.util.LinkedList;
@@ -40,6 +41,9 @@ import master.flame.danmaku.danmaku.renderer.IRenderer.RenderingState;
 import master.flame.danmaku.danmaku.util.SystemClock;
 import tv.cjump.jni.DeviceUtils;
 
+/**
+ * DFM Handler Thread
+ */
 public class DrawHandler extends Handler {
 
     private DanmakuContext mContext;
@@ -90,6 +94,7 @@ public class DrawHandler extends Handler {
 
     private boolean quitFlag = true;
 
+    //时间基线，驱动弹幕开始的时间点，每次start、resume后更新
     private long mTimeBase;
 
     private boolean mReady;
@@ -122,10 +127,12 @@ public class DrawHandler extends Handler {
 
     private long mCordonTime2 = 60;
 
-    private long mFrameUpdateRate = 16;
+//    private long mFrameUpdateRate = 16;
 
-    @SuppressWarnings("unused")
-    private long mThresholdTime;
+    private long mFrameUpdateRate = 8;
+
+//    @SuppressWarnings("unused")
+//    private long mThresholdTime;
 
     private long mLastDeltaTime;
 
@@ -199,8 +206,10 @@ public class DrawHandler extends Handler {
             case PREPARE:
                 mTimeBase = SystemClock.uptimeMillis();
                 if (mParser == null || !mDanmakuView.isViewReady()) {
+                    //还没有准备好，延时100毫秒，再检查
                     sendEmptyMessageDelayed(PREPARE, 100);
                 } else {
+                    //准备就绪，更新标志位，回调监听
                     prepare(new Runnable() {
                         @Override
                         public void run() {
@@ -261,10 +270,10 @@ public class DrawHandler extends Handler {
                 if (mReady) {
                     mRenderingState.reset();
                     mDrawTimes.clear();
-                    mTimeBase = SystemClock.uptimeMillis() - pausedPosition;
+                    mTimeBase = SystemClock.uptimeMillis() - pausedPosition;//更新时间基线
                     timer.update(pausedPosition);
                     removeMessages(RESUME);
-                    sendEmptyMessage(UPDATE);
+                    sendEmptyMessage(UPDATE);//发送Update消息
                     drawTask.start();
                     notifyRendering();
                     mInSeekingAction = false;
@@ -276,9 +285,9 @@ public class DrawHandler extends Handler {
                 }
                 break;
             case UPDATE:
-                if (mContext.updateMethod == 0) {
+                if (mContext.updateMethod == 0) {//0表示，由屏幕刷新率进行回调驱动弹幕
                     updateInChoreographer();
-                } else if (mContext.updateMethod == 1) {
+                } else if (mContext.updateMethod == 1) {//与上方法一样，只不过是新开了线程去驱动。
                     updateInNewThread();
                 } else if (mContext.updateMethod == 2) {
                     updateInCurrentThread();
@@ -298,7 +307,7 @@ public class DrawHandler extends Handler {
                 if (mDanmakuView != null) {
                     mDanmakuView.clear();
                 }
-                if(this.drawTask != null) {
+                if (this.drawTask != null) {
                     this.drawTask.requestClear();
                     this.drawTask.requestHide();
                 }
@@ -331,8 +340,8 @@ public class DrawHandler extends Handler {
                         Choreographer.getInstance().removeFrameCallback(mFrameCallback);
                     }
                 }
-                if (what == QUIT){
-                    if (this.drawTask != null){
+                if (what == QUIT) {
+                    if (this.drawTask != null) {
                         this.drawTask.quit();
                     }
                     if (mParser != null) {
@@ -416,6 +425,9 @@ public class DrawHandler extends Handler {
         sendEmptyMessage(UPDATE);
     }
 
+    /**
+     * 主要做了两件事：延时然后同步主定时器时间，然后通知DanmakuView重绘。
+     */
     private void updateInNewThread() {
         if (mThread != null) {
             return;
@@ -428,7 +440,7 @@ public class DrawHandler extends Handler {
                 while (!isQuited() && !quitFlag) {
                     long startMS = SystemClock.uptimeMillis();
                     dTime = SystemClock.uptimeMillis() - lastTime;
-                    long diffTime = mFrameUpdateRate - dTime;
+                    long diffTime = mFrameUpdateRate - dTime;//两次绘制时间间隔太短，小于屏幕刷新间隔，会延迟。
                     if (diffTime > 1 && !mNonBlockModeEnable) {
                         SystemClock.sleep(1);
                         continue;
@@ -439,7 +451,7 @@ public class DrawHandler extends Handler {
                         SystemClock.sleep(60 - d);
                         continue;
                     }
-                    d = mDanmakuView.drawDanmakus();
+                    d = mDanmakuView.drawDanmakus();//开始postInvalidate，绘制弹幕，同时返回绘制时间
                     if (d > mCordonTime2) {  // this situation may be cuased by ui-thread waiting of DanmakuView, so we sync-timer at once
                         timer.add(d);
                         mDrawTimes.clear();
@@ -459,20 +471,25 @@ public class DrawHandler extends Handler {
         mThread.start();
     }
 
+    /**
+     * Android系统每隔16ms都会发出VSYNC信号，触发UI的绘制。通过设置Choreographer.FrameCallback，下一帧的时候进行回调。
+     */
     @TargetApi(16)
     private class FrameCallback implements Choreographer.FrameCallback {
         @Override
         public void doFrame(long frameTimeNanos) {
             sendEmptyMessage(UPDATE);
         }
-    };
+    }
+
+    ;
 
     @TargetApi(16)
     private void updateInChoreographer() {
         if (quitFlag) {
             return;
         }
-        Choreographer.getInstance().postFrameCallback(mFrameCallback);
+        Choreographer.getInstance().postFrameCallback(mFrameCallback);//添加下一帧回调
         long startMS = SystemClock.uptimeMillis();
         long d = syncTimer(startMS);
         if (d < 0) {
@@ -498,34 +515,43 @@ public class DrawHandler extends Handler {
 
     }
 
+    /**
+     * 主要是计算了一下绘制间隔时间，然后同步一下主定时器
+     *
+     * @param startMS
+     * @return 绘制间隔时间
+     */
     private final long syncTimer(long startMS) {
         if (mInSeekingAction || mInSyncAction) {
             return 0;
         }
         mInSyncAction = true;
         long d = 0;
-        long time = startMS - mTimeBase;
+        long time = startMS - mTimeBase;//当前时间到基线时间差
         if (mNonBlockModeEnable) {
             if (mCallback != null) {
                 mCallback.updateTimer(timer);
                 d = timer.lastInterval();
             }
-        } else if (!mDanmakusVisible || mRenderingState.nothingRendered || mInWaitingState) {
+        } else if (!mDanmakusVisible || mRenderingState.nothingRendered || mInWaitingState) {//没有弹幕绘制的情况
             timer.update(time);
             mRemainingTime = 0;
             if (mCallback != null) {
                 mCallback.updateTimer(timer);
             }
         } else {
+            //距基线的时间差，减去上一次绘制完成时间，得到绘制间隙时间
             long gapTime = time - timer.currMillisecond;
+            //计算绘制间隙平均时间，Math.max(屏幕刷新间隔16或8，平均绘制过的每帧时间间隔）
             long averageTime = Math.max(mFrameUpdateRate, getAverageRenderingTime());
+            //若果距离上次间隙时间过长||上次渲染时间大于第一警戒时间（40 ms）||上一步计算的绘制间隙平均时间大于第一警戒时间
             if (gapTime > 2000 || mRenderingState.consumingTime > mCordonTime || averageTime > mCordonTime) {
                 d = gapTime;
                 gapTime = 0;
-            } else {
-                d = averageTime + gapTime / mFrameUpdateRate;
-                d = Math.max(mFrameUpdateRate, d);
-                d = Math.min(mCordonTime, d);
+            } else {//普通情况
+                d = averageTime + gapTime / mFrameUpdateRate;//将绘制间隙平均时间赋给d，后面的项值不大，可以忽略
+                d = Math.max(mFrameUpdateRate, d);//大于等于固定绘制间隔16
+                d = Math.min(mCordonTime, d);//小于第一警戒时间(2.5倍),
                 long a = d - mLastDeltaTime;
                 if (a > 3 && a < 8 && mLastDeltaTime >= mFrameUpdateRate && mLastDeltaTime <= mCordonTime) {
                     d = mLastDeltaTime;
@@ -534,11 +560,12 @@ public class DrawHandler extends Handler {
                 mLastDeltaTime = d;
             }
             mRemainingTime = gapTime;
-            timer.add(d);
+//            timer.add(d);//更新主定时器时间，加上计算的时间间隔
+            timer.update(time);
             if (mCallback != null) {
                 mCallback.updateTimer(timer);
             }
-//            Log.e("DrawHandler", time+"|d:" + d  + "RemaingTime:" + mRemainingTime + ",gapTime:" + gapTime + ",rtim:" + mRenderingState.consumingTime + ",average:" + averageTime);
+            Log.i("DrawHandler", time+"|d:" + d  + "RemaingTime:" + mRemainingTime + ",gapTime:" + gapTime + ",rtim:" + mRenderingState.consumingTime + ",average:" + averageTime);
         }
 
         mInSyncAction = false;
@@ -552,11 +579,16 @@ public class DrawHandler extends Handler {
     }
 
     private void initRenderingConfigs() {
-        long averageFrameConsumingTime = 16;
-        mCordonTime = Math.max(33, (long) (averageFrameConsumingTime * 2.5f));
+//        long averageFrameConsumingTime = 16;
+        ////平均每帧渲染间隔
+        long averageFrameConsumingTime = 8;
+        //警戒值1
+        mCordonTime = Math.max(33, (long) (averageFrameConsumingTime * 2.5f));//(33,40|20)
+        //警戒值2
         mCordonTime2 = (long) (mCordonTime * 2.5f);
-        mFrameUpdateRate = Math.max(16, averageFrameConsumingTime / 15 * 15);
-        mThresholdTime = mFrameUpdateRate + 3;
+        //每帧之间的渲染间隔
+        mFrameUpdateRate = Math.max(averageFrameConsumingTime, averageFrameConsumingTime / 15 * 15);
+//        mThresholdTime = mFrameUpdateRate + 3;
 //        Log.i("DrawHandler", "initRenderingConfigs test-fps:" + averageFrameConsumingTime + "ms,mCordonTime:"
 //                + mCordonTime + ",mFrameRefreshingRate:" + mFrameUpdateRate);
     }
@@ -761,7 +793,7 @@ public class DrawHandler extends Handler {
         if (!mInWaitingState) {
             return;
         }
-        if(drawTask != null) {
+        if (drawTask != null) {
             drawTask.requestClear();
         }
         if (mUpdateInSeparateThread) {
@@ -815,7 +847,7 @@ public class DrawHandler extends Handler {
 
     private synchronized long getAverageRenderingTime() {
         int frames = mDrawTimes.size();
-        if(frames <= 0)
+        if (frames <= 0)
             return 0;
         Long first = mDrawTimes.peekFirst();
         Long last = mDrawTimes.peekLast();
@@ -836,7 +868,7 @@ public class DrawHandler extends Handler {
         }
     }
 
-    public IDisplayer getDisplayer(){
+    public IDisplayer getDisplayer() {
         return mDisp;
     }
 

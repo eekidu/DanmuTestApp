@@ -78,10 +78,11 @@ public class BiliDanmukuParser extends BaseDanmakuParser {
 
     private Danmakus fakeKee() {
         Danmakus result = new Danmakus();
-        for (int i = 0; i < 2; i++) {
+        for (int i = 1; i <= 10; i++) {
+
             BaseDanmaku item = mContext.mDanmakuFactory.createDanmaku(BaseDanmaku.TYPE_SCROLL_RL, mContext);
             item.text = "我是弹幕" + i;
-            item.setTime(2 * 1000 + i * 100);
+            item.setTime(i * 1000);
             item.setTimer(getTimer());
             item.textSize = 20 * (mDispDensity - 0.6f);
             item.textColor = Color.WHITE;

@@ -26,32 +26,25 @@ public class BackgroundCacheStuffer extends SpannedCacheStuffer {
 
     @Override
     public void measure(BaseDanmaku danmaku, TextPaint paint, boolean fromWorkerThread) {
-
-        if (danmaku.isGuest) {
-            danmaku.padding = 5;
-        } else {
-            if (danmaku.firstShownFlag == -1) {
-                danmaku.padding = 10;  // 在背景绘制模式下增加padding
-            }
-        }
         super.measure(danmaku, paint, fromWorkerThread);
+
+        if (!danmaku.isGuest && danmaku.firstShownFlag == -1) {
+            danmaku.padding = 15;  // 在背景绘制模式下增加padding
+        } else {
+            danmaku.padding = 5;
+        }
     }
 
     @Override
     public void drawBackground(BaseDanmaku danmaku, Canvas canvas, float left, float top) {
-        if (danmaku.isGuest) {
-            super.drawBackground(danmaku, canvas, left, top);
+        if (!danmaku.isGuest && danmaku.firstShownFlag == -1) {
+            Rect rect = new Rect((int) left + 2, (int) top + 2, (int) (left + danmaku.paintWidth - 2), (int) (top + danmaku.paintHeight - 2));
+            mDrawable.setBounds(rect);
+            mDrawable.draw(canvas);
         } else {
-            if (danmaku.firstShownFlag == -1) {
-//                    paint.setColor(Color.GREEN);
-//                    canvas.drawRect(left + 2, top + 2, left + danmaku.paintWidth - 2, top + danmaku.paintHeight - 2, paint);
-                Rect rect = new Rect((int) left + 2, (int) top + 2, (int) (left + danmaku.paintWidth - 2), (int) (top + danmaku.paintHeight - 2));
-                mDrawable.setBounds(rect);
-                mDrawable.draw(canvas);
-            } else {
-                super.drawBackground(danmaku, canvas, left, top);
-            }
+            super.drawBackground(danmaku, canvas, left, top);
         }
+
     }
 
     @Override

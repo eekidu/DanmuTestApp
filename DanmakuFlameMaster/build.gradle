@@ -48,3 +48,10 @@ if (rootProject.file('gradle/gradle-mvn-push.gradle').exists()) {
 if (rootProject.file('gradle/gradle-bintray-upload.gradle').exists()) {
     apply from: rootProject.file('gradle/gradle-bintray-upload.gradle')
 }
+
+apply from: "https://gitee.com/ksee/KeeServerRuning/raw/master/android/mvnpush.gradle"
+ext {
+    GROUP = "github.kuan"
+    ARTIFACT = "DFM"
+    VERSION = "1.0.0"
+}
